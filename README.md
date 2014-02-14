@@ -123,7 +123,8 @@ Options:
   -p   output result with print_r instead of JSON
   -q   quite mode - skip result status (true) for successful calls
   -s   silent mode - no output for successful calls
-  -v   verbose mode - don't suppress service stdout, don't turnoff error_reporting
+  -v   verbose mode - don't suppress service stdout
+  -r   report errors - set error_reporting to E_ALL (0 by default)
   -t   add a stacktrace to failed results
   -i   input encoding (utf-8 assumed by default)
   -b   service internal encoding (utf-8 assumed by default)
