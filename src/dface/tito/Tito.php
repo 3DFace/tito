@@ -57,7 +57,7 @@ class Tito {
 	function call(){
 		if(PHP_SAPI === 'cli'){
 			$argv = $_SERVER['argv'];
-			$opt = getopt('evtspjqri:ro:d:b:');
+			$opt = getopt('evtspjqri:o:d:b:');
 			$params = $this->exclude_options_from_params($argv, $opt);
 			list($out, $exit) = $this->do_call($argv[0], $opt, $params);
 			echo $out;
