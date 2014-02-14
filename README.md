@@ -9,7 +9,9 @@ You may find it interesting if you utilize any kind of IoC-container in your app
 Using that tool you can call your services from a command line.
 
 Something like:
-`php <created_tool> <service_name> <method_name> <param1> <param2> ...`
+```
+php <created_tool> <service_name> <method_name> <param1> <param2> ...
+```
 
 There is nothing special.
 It just takes a `<service>` from your container, calls its method and outputs a result in JSON format.
@@ -151,7 +153,7 @@ php tito.php asd process hi
 
 ## Security
 
-`Tito` rely on `PHP_SAPI` constant to prevent execution from non-cli environment. There are no other restrictions.
+`Tito` relies on `PHP_SAPI` constant to prevent execution from non-cli environment. There are no other restrictions.
 If you need more advanced policy, please implement it by yourself in your script.
 
 ## Tests
