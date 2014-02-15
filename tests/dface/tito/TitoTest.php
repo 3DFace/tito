@@ -87,52 +87,52 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	function testPlainEncoding(){
-		list($out) = $this->titoCall(['i'=>'UTF8', 'b'=>'latin1'], ['service1', 'reply', 'asd']);
+		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'reply', 'asd']);
 		$this->assertEquals('[true,"asd"]', trim($out));
 	}
 
 	function testPlainNumericResult(){
-		list($out) = $this->titoCall(['i'=>'UTF8', 'b'=>'latin1'], ['service1', 'length', 'asd']);
+		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'length', 'asd']);
 		$this->assertEquals('[true,3]', trim($out));
 	}
 
 	function testPlainAssocResult(){
-		list($out) = $this->titoCall(['i'=>'UTF8', 'b'=>'latin1'], ['service1', 'key_val', 'asd']);
+		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'key_val', 'asd']);
 		$this->assertEquals('[true,{"asd":1}]', trim($out));
 	}
 
 	function testJsonQuiteEncoding(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'cp1251', 'b'=>'utf8', 'q'=>1], ['["service1", "reply", ["ôûâ"]]']);
-		$this->assertEquals('"ôûâ"', trim($out));
+		list($out) = $this->titoCall(['j'=>1, 'i'=>'cp1251', 'q'=>1], ['["service1", "reply", ["'.chr(244).'"]]']);
+		$this->assertEquals('"'.chr(244).'"', trim($out));
 	}
 
 	function testJsonBadInputEncoding(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'xxx'], ['["service1", "reply", ["ôûâ"]]']);
+		list($out) = $this->titoCall(['j'=>1, 'i'=>'xxx'], ['["service1", "reply", ["'.chr(244).'"]]']);
 		$this->assertCallFailed('Cant convert encoding', $out);
 	}
 
 	function testJsonBadValueEncoding(){
-		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply", ["ôûâ"]]']);
+		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply", ["'.chr(244).'"]]']);
 		$this->assertCallFailed('Cant format result as JSON', $out);
 	}
 
 	function testJsonQuiteNumeric(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'UTF8', 'b'=>'latin1', 'q'=>1], ['["service1", "reply", [1]]']);
+		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'q'=>1], ['["service1", "reply", [1]]']);
 		$this->assertEquals('1', trim($out));
 	}
 
 	function testJsonAssoc(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'UTF8', 'b'=>'latin1'], ['["service1", "reply", [{"asd":1}]]']);
+		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1'], ['["service1", "reply", [{"asd":1}]]']);
 		$this->assertEquals('[true,{"asd":1}]', trim($out));
 	}
 
 	function testJsonTooDeepRecursion(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'UTF8', 'b'=>'latin1', 'd'=>3], ['["service1", "recursive", [5]]']);
+		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'd'=>3], ['["service1", "recursive", [5]]']);
 		$this->assertCallFailed('Recursion is too deep', $out);
 	}
 
 	function testJsonTooDeepRecursionPTR(){
-		list($out) = $this->titoCall(['j'=>1, 'i'=>'UTF8', 'b'=>'latin1', 'd'=>3, 'p'=>1, 't'=>1, 'r'=>1], ['["service1", "recursive", [5]]']);
+		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'd'=>3, 'p'=>1, 't'=>1, 'r'=>1], ['["service1", "recursive", [5]]']);
 		$this->assertContains('Recursion is too deep', $out);
 	}
 

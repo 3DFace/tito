@@ -14,12 +14,25 @@ class Tito {
 	protected $max_depth;
 	/** @var string */
 	protected $system_info;
+	/** @var callable */
+	protected $encoding_converter;
 
 	function __construct($system_info, $service_locator, $default_encoding = self::UTF8, $max_depth = 512){
 		$this->system_info = $system_info;
 		$this->service_locator = $service_locator;
 		$this->default_encoding = $default_encoding;
 		$this->max_depth = max(1, $max_depth);
+		if(function_exists('mb_convert_encoding')){
+			$this->encoding_converter = 'mb_convert_encoding';
+		}elseif(function_exists('iconv')){
+			$this->encoding_converter = function($str, $to, $from){
+				return iconv($from, $to, $str);
+			};
+		}else{
+			$this->encoding_converter = function (){
+				throw new TitoException("Encoding conversion unavailable. Please install mbstring extension.");
+			};
+		}
 	}
 
 	function help($script_name){
@@ -29,19 +42,19 @@ class Tito {
 			$this->system_info
 			."${n}${n}Makes a service method call and outputs a result."
 			."${n}${n}Usage: php $script [options] <call>"
-			."${n}${n}Call can be in a default form:"
+			."${n}${n}A <call> can be in the default form:"
 			."${n}  <service> <method> [<arg1> <arg2> ...]"
 			."${n}${n}or as JSON array, if -j specified:"
 			."${n}  '[\"<service>\", \"<method>\" [,<args array>]]'"
-			."${n}${n}Result is either:"
+			."${n}${n}A result is either:"
 			."${n}  [true, <returned value>] - for successful calls"
 			."${n}or"
 			."${n}  [false, <exception type>, <message>] - for failed ones."
-			."${n}${n}The result is displayed in JSON format unless -p specified."
+			."${n}${n}Results are displayed in JSON format unless -p specified."
 			."${n}${n}Options:"
 			."${n}  -j   <call> passed in JSON format"
-			."${n}  -p   output result with print_r instead of JSON"
-			."${n}  -q   quite mode - skip result status (true) for successful calls"
+			."${n}  -p   output a result with print_r instead of JSON"
+			."${n}  -q   quite mode - skip result status 'true' for successful calls"
 			."${n}  -s   silent mode - no output for successful calls"
 			."${n}  -v   verbose mode - don't suppress service stdout"
 			."${n}  -r   report errors - set error_reporting to E_ALL (0 by default)"
@@ -50,7 +63,7 @@ class Tito {
 			."${n}  -b   service internal encoding ($this->default_encoding assumed by default)"
 			."${n}  -o   output encoding (input encoding assumed by default)"
 			."${n}  -d   max recursion depth for encoding conversion (default $this->max_depth)"
-			."${n}  -e   set exit code (1) for failed calls"
+			."${n}  -e   set exit code to '1' for failed calls"
 			."${n}${n}";
 	}
 
@@ -268,7 +281,7 @@ class Tito {
 	}
 
 	protected function convert_encoding($v, $out_encoding, $in_encoding){
-		$result = mb_convert_encoding($v, $out_encoding, $in_encoding);
+		$result = call_user_func($this->encoding_converter, $v, $out_encoding, $in_encoding);
 		if($result === false){
 			$e = error_get_last();
 			throw new TitoException("Cant convert encoding: ".$e['message']);
