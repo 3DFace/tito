@@ -127,7 +127,7 @@ class Tito {
 							'message' => 'error',
 						];
 						$msg = "Fatal error at $e[file]:$e[line]: $e[message]";
-						echo $this->rescueFormatResult([false, 'FatalError', $msg], isset($opt['p']));
+						echo $this->rescueFormatResult([false, 'FatalError', $msg], isset($opt['p'])).PHP_EOL;
 					}
 				});
 				$result = [true, call_user_func_array($callable, $call_args)];
