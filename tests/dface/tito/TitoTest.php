@@ -20,6 +20,15 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$this->assertContains($reason_substring, $out);
 	}
 
+	protected function titoExternalCall($opt, $params){
+		$opt = array_map(function($v, $k){
+			return "-$k$v";
+		}, $opt, array_keys($opt));
+		$cmd = PHP_BINARY.' '.__DIR__.'/../../test-tito.php '.implode(" ", $opt).' '.implode(" ", $params);
+		exec($cmd, $out, $exit);
+		return [implode("\n", $out), $exit];
+	}
+
 	protected function titoCall($opt, $params){
 		$x = $this->createTestTito();
 		return $x->do_call('test-script.php', $opt, $params);
@@ -150,6 +159,16 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$opt = ['p'=>1, 't'=>1, 's'=>1, 'e'=>1];
 		$params = $x->exclude_options_from_params($argv, $opt);
 		$this->assertEquals(['service1', 'reply', '1'], $params);
+	}
+
+	function testErrorReporting(){
+		list($out) = $this->titoCall(['r'=>1], ['service1', 'reply']);
+		$this->assertCallFailed('Missing argument', $out);
+	}
+
+	function testFatalMethod(){
+		list($out) = $this->titoExternalCall(['e'=>1], ['service1', 'call_undefined']);
+		$this->assertCallFailed('Call to undefined method', $out);
 	}
 
 } 

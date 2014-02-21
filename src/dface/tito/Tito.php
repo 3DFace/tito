@@ -16,6 +16,8 @@ class Tito {
 	protected $system_info;
 	/** @var callable */
 	protected $encoding_converter;
+	/** @var bool */
+	protected $fatal;
 
 	function __construct($system_info, $service_locator, $default_encoding = self::UTF8, $max_depth = 512){
 		$this->system_info = $system_info;
@@ -56,8 +58,8 @@ class Tito {
 			."${n}  -p   output a result with print_r instead of JSON"
 			."${n}  -q   quite mode - skip result status 'true' for successful calls"
 			."${n}  -s   silent mode - no output for successful calls"
-			."${n}  -v   verbose mode - don't suppress service stdout"
-			."${n}  -r   report errors - set error_reporting to E_ALL (0 by default)"
+			."${n}  -v   verbose mode - don't suppress service stdout, don't suppress error_reporting"
+			."${n}  -r   report errors - throw ErrorException on E_ALL"
 			."${n}  -t   add a stacktrace to failed results"
 			."${n}  -i   input encoding ($this->default_encoding assumed by default)"
 			."${n}  -b   service internal encoding ($this->default_encoding assumed by default)"
@@ -90,11 +92,15 @@ class Tito {
 			}
 			if(!isset($opt['v'])){
 				ob_start();
+				error_reporting(0);
 			}
 			if(isset($opt['r'])){
+				set_error_handler(function ($err_no, $err_str, $err_file, $err_line ) {
+					if(error_reporting()){
+						throw new \ErrorException($err_str, $err_no, 0, $err_file, $err_line);
+					}
+				}, E_ALL);
 				error_reporting(E_ALL);
-			}else{
-				error_reporting(0);
 			}
 			try{
 				if(isset($opt['j'])){
@@ -112,6 +118,18 @@ class Tito {
 				if(!is_callable($callable)){
 					throw new TitoException("'$service_name' does not have method '$method_name'");
 				}
+				$this->fatal = true;
+				register_shutdown_function(function()use($opt){
+					if($this->fatal) {
+						$e = error_get_last() ?: [
+							'file' => 'unknown',
+							'line' => 'unknown',
+							'message' => 'error',
+						];
+						$msg = "Fatal error at $e[file]:$e[line]: $e[message]";
+						echo $this->rescueFormatResult([false, 'FatalError', $msg], isset($opt['p']));
+					}
+				});
 				$result = [true, call_user_func_array($callable, $call_args)];
 			}catch(\Exception $e){
 				$result = [false, get_class($e), $e->getMessage()];
@@ -119,6 +137,7 @@ class Tito {
 					$result[] = $e->getTraceAsString();
 				}
 			}
+			$this->fatal = false;
 			if(!isset($opt['v']) && ob_get_level() > 0){
 				ob_end_clean();
 			}
@@ -149,14 +168,18 @@ class Tito {
 			if(isset($opt['t'])){
 				$result[] = $e->getTraceAsString();
 			}
-			if(isset($opt['p'])){
-				return print_r($result, 1);
-			}else{
-				$result = array_map(function($v){
-					return '"'.addslashes($v).'"';
-				}, array_slice($result, 1));
-				return '[false,'.implode(",", $result).']';
-			}
+			return $this->rescueFormatResult($result, isset($opt['p']));
+		}
+	}
+
+	protected function rescueFormatResult($result, $use_print_r){
+		if($use_print_r){
+			return print_r($result, 1);
+		}else{
+			$result = array_map(function($v){
+				return '"'.addslashes($v).'"';
+			}, array_slice($result, 1));
+			return '[false,'.implode(",", $result).']';
 		}
 	}
 
