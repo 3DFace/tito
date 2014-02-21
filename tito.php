@@ -1,5 +1,4 @@
 <?php
-print_r($_SERVER);
 // Example tiny tool
 
 // please modify this to conform with your class-loading strategy:
