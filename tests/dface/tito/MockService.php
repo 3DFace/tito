@@ -33,4 +33,8 @@ class MockService {
 		}
 	}
 
-} 
+	function call_undefined(){
+		return $this->a();
+	}
+
+}

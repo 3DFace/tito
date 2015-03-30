@@ -1,4 +1,6 @@
 <?php
+// Example tiny tool
+
 // please modify this to conform with your class-loading strategy:
 include_once 'vendor/autoload.php';
 
