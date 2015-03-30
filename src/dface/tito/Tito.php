@@ -105,7 +105,6 @@ class Tito {
 			}
 			try{
 				if(isset($opt['x'])){
-					echo "code is ".$opt['x']."\n";
 					eval($opt['x']);
 				}
 				if(isset($opt['j'])){
