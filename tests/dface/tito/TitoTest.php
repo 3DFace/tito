@@ -152,4 +152,9 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(['service1', 'reply', '1'], $params);
 	}
 
+	function testEval(){
+		list($out) = $this->titoCall(['x' => 'putenv("asd=zxc");'], ['service1', 'getEnv', 'asd']);
+		$this->assertEquals('[true,"zxc"]', trim($out));
+	}
+
 } 

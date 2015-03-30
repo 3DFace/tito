@@ -17,6 +17,14 @@ class MockService {
 		return [$val=>1];
 	}
 
+	function getEnv($name){
+		return getenv($name);
+	}
+
+	function getIni($name){
+		return ini_get($name);
+	}
+
 	function recursive($deep){
 		if($deep<=0){
 			return $deep;

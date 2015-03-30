@@ -130,6 +130,7 @@ Options:
   -b   service internal encoding (utf-8 assumed by default)
   -o   output encoding (input encoding assumed by default)
   -d   max recursion depth for encoding conversion (default 512)
+  -x   eval specified code before making service call
   -e   set exit code (1) for failed calls
 
 ```

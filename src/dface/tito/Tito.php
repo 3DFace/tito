@@ -50,6 +50,7 @@ class Tito {
 			."${n}  -b   service internal encoding ($this->default_encoding assumed by default)"
 			."${n}  -o   output encoding (input encoding assumed by default)"
 			."${n}  -d   max recursion depth for encoding conversion (default $this->max_depth)"
+			."${n}  -x   eval specified code before making service call"
 			."${n}  -e   set exit code (1) for failed calls"
 			."${n}${n}";
 	}
@@ -57,7 +58,7 @@ class Tito {
 	function call(){
 		if(PHP_SAPI === 'cli'){
 			$argv = $_SERVER['argv'];
-			$opt = getopt('evtspjqri:o:d:b:');
+			$opt = getopt('evtspjqri:o:d:b:x:');
 			$params = $this->exclude_options_from_params($argv, $opt);
 			list($out, $exit) = $this->do_call($argv[0], $opt, $params);
 			echo $out;
@@ -84,6 +85,10 @@ class Tito {
 				error_reporting(0);
 			}
 			try{
+				if(isset($opt['x'])){
+					echo "code is ".$opt['x']."\n";
+					eval($opt['x']);
+				}
 				if(isset($opt['j'])){
 					list($service_name, $method_name, $call_args) =
 						$this->parseJsonCallDefinition($params[0], $input_encoding, $service_encoding);
