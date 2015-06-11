@@ -153,7 +153,7 @@ class Tito {
 				if(isset($opt['q']) && $result[0]){
 					$result = $result[1];
 				}
-				$out = $this->formatResult($opt, $result, $service_encoding, $output_encoding).PHP_EOL;
+				$out = $this->formatResult($opt, $result, $service_encoding, $output_encoding);
 			}
 			if(isset($opt['e']) && !$result[0]){
 				$exit_code = 1;
@@ -173,7 +173,7 @@ class Tito {
 			}elseif(isset($opt['l'])){
 				return $this->result_to_lines($result, 0);
 			}else{
-				return $this->result_to_json($result, $result_encoding, $output_encoding);
+				return $this->result_to_json($result, $result_encoding, $output_encoding).PHP_EOL;
 			}
 		}catch(\Exception $e){
 			$result = [false, get_class($e), $e->getMessage()];
@@ -191,7 +191,7 @@ class Tito {
 			$result = array_map(function($v){
 				return '"'.addslashes($v).'"';
 			}, array_slice($result, 1));
-			return '[false,'.implode(",", $result).']';
+			return '[false,'.implode(",", $result).']'.PHP_EOL;
 		}
 	}
 
@@ -300,9 +300,9 @@ class Tito {
 				$result .= $this->result_to_lines($v, $level + 1);
 			}
 		}else{
-			$result .= strval($value);
+			$result .= strval($value).PHP_EOL;
 		}
-		return $result."\n";
+		return $result;
 	}
 
 	protected function convert($in_encoding, $out_encoding, $value){
