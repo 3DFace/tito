@@ -112,11 +112,13 @@ A result is either:
 or
   [false, <exception type>, <message>] - for failed ones.
 
-Results are displayed in JSON format unless -p specified.
+Results are displayed in JSON format unless -p|-y|-l specified.
 
 Options:
   -j   <call> passed in JSON format
   -p   output a result with print_r instead of JSON
+  -y   output a result as YAML instead of JSON
+  -l   output a result as list of lines (values only)
   -q   quite mode - skip result status 'true' for successful call
   -s   silent mode - no output for successful calls
   -v   verbose mode - don't suppress service stdout, don't suppress error_reporting

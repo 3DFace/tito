@@ -2,6 +2,8 @@
 
 namespace dface\tito;
 
+use Symfony\Component\Yaml\Yaml;
+
 class Tito {
 
 	const UTF8 = 'utf-8';
@@ -52,10 +54,12 @@ class Tito {
 			."${n}  [true, <returned value>] - for successful calls"
 			."${n}or"
 			."${n}  [false, <exception type>, <message>] - for failed ones."
-			."${n}${n}Results are displayed in JSON format unless -p specified."
+			."${n}${n}Results are displayed in JSON format unless -p|-y|-l specified."
 			."${n}${n}Options:"
 			."${n}  -j   <call> passed in JSON format"
 			."${n}  -p   output a result with print_r instead of JSON"
+			."${n}  -y   output a result as YAML instead of JSON"
+			."${n}  -l   output a result as list of lines (values only)"
 			."${n}  -q   quite mode - skip result status 'true' for successful calls"
 			."${n}  -s   silent mode - no output for successful calls"
 			."${n}  -v   verbose mode - don't suppress service stdout, don't suppress error_reporting"
@@ -73,7 +77,7 @@ class Tito {
 	function call(){
 		if(PHP_SAPI === 'cli'){
 			$argv = $_SERVER['argv'];
-			$opt = getopt('evtspjqri:o:d:b:x:');
+			$opt = getopt('evtspyljqri:o:d:b:x:');
 			$params = $this->exclude_options_from_params($argv, $opt);
 			list($out, $exit) = $this->do_call($argv[0], $opt, $params);
 			echo $out;
@@ -164,6 +168,10 @@ class Tito {
 		try{
 			if(isset($opt['p'])){
 				return print_r($this->convert($result_encoding, $output_encoding, $result), 1);
+			}elseif(isset($opt['y'])){
+				return $this->result_to_yaml($result, $result_encoding, $output_encoding);
+			}elseif(isset($opt['l'])){
+				return $this->result_to_lines($result, 0);
 			}else{
 				return $this->result_to_json($result, $result_encoding, $output_encoding);
 			}
@@ -270,6 +278,31 @@ class Tito {
 			return $this->convert_encoding(pack('H*', $match[1]), self::UTF8, 'UCS-2BE');
 		}, $json_utf8);
 		return $this->convert(self::UTF8, $output_encoding, $json_utf8);
+	}
+
+	protected function result_to_yaml($result, $result_encoding, $output_encoding){
+		$result_utf8 = $this->convert($result_encoding, self::UTF8, $result);
+		try{
+			$yaml_utf8 = Yaml::dump($result_utf8, 4, 4, true, true);
+		}catch(\Exception $e){
+			throw new TitoException("Cant format result as YAML: ".$e->getMessage());
+		}
+		return $this->convert(self::UTF8, $output_encoding, $yaml_utf8);
+	}
+
+	protected function result_to_lines($value, $level){
+		if($level === $this->max_depth){
+			throw new TitoException("Recursion is too deep ($level)");
+		}
+		$result = "";
+		if(is_array($value)){
+			foreach($value as $v){
+				$result .= $this->result_to_lines($v, $level + 1);
+			}
+		}else{
+			$result .= strval($value);
+		}
+		return $result."\n";
 	}
 
 	protected function convert($in_encoding, $out_encoding, $value){
