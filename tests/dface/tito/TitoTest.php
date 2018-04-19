@@ -10,7 +10,7 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 			'service1' => new MockService(),
 			'service2' => 'not_a_service',
 		];
-		return new Tito("Test system", function ($name) use ($services){
+		return new Tito('Test system', function ($name) use ($services){
 			return $services[$name];
 		});
 	}
@@ -24,7 +24,7 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$opt = array_map(function($v, $k){
 			return "-$k$v";
 		}, $opt, array_keys($opt));
-		$cmd = PHP_BINARY.' '.__DIR__.'/../../test-tito.php '.implode(" ", $opt).' '.implode(" ", $params);
+		$cmd = PHP_BINARY.' '.__DIR__.'/../../test-tito.php '.implode(' ', $opt).' '.implode(' ', $params);
 		exec($cmd, $out, $exit);
 		return [implode("\n", $out), $exit];
 	}
@@ -34,118 +34,118 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		return $x->do_call('test-script.php', $opt, $params);
 	}
 
-	function testHelpNotFails(){
+	public function testHelpNotFails(){
 		list($out) = $this->titoCall([], []);
 		$this->assertContains('test-script', $out, 'help problems');
 	}
 
-	function testPlainSuccessfulCall(){
+	public function testPlainSuccessfulCall(){
 		list($out) = $this->titoCall([], ['service1', 'reply', 'asd']);
 		$this->assertEquals('[true,"asd"]', trim($out));
 	}
 
-	function testPlainSuccessfulCallP(){
+	public function testPlainSuccessfulCallP(){
 		list($out) = $this->titoCall(['p'=>1], ['service1', 'reply', 'asd']);
-		$this->assertEquals(trim(print_r([true, "asd"], 1)), trim($out));
+		$this->assertEquals(trim(print_r([true, 'asd'], 1)), trim($out));
 	}
 
-	function testPlainNoMethod(){
+	public function testPlainNoMethod(){
 		list($out, $exit) = $this->titoCall(['e'=>1], ['service1']);
 		$this->assertCallFailed('Provide a method name', $out);
 		$this->assertEquals(1, $exit);
 	}
 
-	function testPlainBadMethodT(){
+	public function testPlainBadMethodT(){
 		list($out) = $this->titoCall(['t'=>1], ['service1', 'asd']);
 		$this->assertCallFailed('does not have method', $out);
 	}
 
-	function testJsonSuccessfulCall(){
+	public function testJsonSuccessfulCall(){
 		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply", ["asd"]]']);
 		$this->assertEquals('[true,"asd"]', trim($out));
 	}
 
-	function testJsonSuccessfulCallNoArgs(){
+	public function testJsonSuccessfulCallNoArgs(){
 		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply"]']);
 		$this->assertEquals('[true,null]', trim($out));
 	}
 
-	function testJsonBadFormat(){
+	public function testJsonBadFormat(){
 		list($out) = $this->titoCall(['j'=>1], ['["asd"']);
 		$this->assertCallFailed('Cant parse json call', $out);
 	}
 
-	function testJsonBadDefinition(){
+	public function testJsonBadDefinition(){
 		list($out) = $this->titoCall(['j'=>1], ['"asd"']);
 		$this->assertCallFailed('Call must be an array', $out);
 	}
 
-	function testJsonNoMethod(){
+	public function testJsonNoMethod(){
 		list($out) = $this->titoCall(['j'=>1], ['["service1"]']);
 		$this->assertCallFailed('Provide a method name', $out);
 	}
 
-	function testJsonBadArgs(){
+	public function testJsonBadArgs(){
 		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply", "asd"]']);
 		$this->assertCallFailed('Call parameters must be an array', $out);
 	}
 
-	function testNoSuchService(){
+	public function testNoSuchService(){
 		list($out) = $this->titoCall([], ['asd', 'asd']);
 		$this->assertCallFailed('No such service', $out);
 	}
 
-	function testPlainEncoding(){
+	public function testPlainEncoding(){
 		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'reply', 'asd']);
 		$this->assertEquals('[true,"asd"]', trim($out));
 	}
 
-	function testPlainNumericResult(){
+	public function testPlainNumericResult(){
 		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'length', 'asd']);
 		$this->assertEquals('[true,3]', trim($out));
 	}
 
-	function testPlainAssocResult(){
+	public function testPlainAssocResult(){
 		list($out) = $this->titoCall(['b'=>'latin1'], ['service1', 'key_val', 'asd']);
 		$this->assertEquals('[true,{"asd":1}]', trim($out));
 	}
 
-	function testJsonQuiteEncoding(){
+	public function testJsonQuiteEncoding(){
 		list($out) = $this->titoCall(['j'=>1, 'i'=>'cp1251', 'q'=>1], ['["service1", "reply", ["'.chr(244).'"]]']);
 		$this->assertEquals('"'.chr(244).'"', trim($out));
 	}
 
-	function testJsonBadInputEncoding(){
+	public function testJsonBadInputEncoding(){
 		list($out) = $this->titoCall(['j'=>1, 'i'=>'xxx'], ['["service1", "reply", ["'.chr(244).'"]]']);
 		$this->assertCallFailed('Cant convert encoding', $out);
 	}
 
-	function testJsonBadValueEncoding(){
+	public function testJsonBadValueEncoding(){
 		list($out) = $this->titoCall(['j'=>1], ['["service1", "reply", ["'.chr(244).'"]]']);
 		$this->assertCallFailed('Cant format result as JSON', $out);
 	}
 
-	function testJsonQuiteNumeric(){
+	public function testJsonQuiteNumeric(){
 		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'q'=>1], ['["service1", "reply", [1]]']);
 		$this->assertEquals('1', trim($out));
 	}
 
-	function testJsonAssoc(){
+	public function testJsonAssoc(){
 		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1'], ['["service1", "reply", [{"asd":1}]]']);
 		$this->assertEquals('[true,{"asd":1}]', trim($out));
 	}
 
-	function testJsonTooDeepRecursion(){
+	public function testJsonTooDeepRecursion(){
 		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'd'=>3], ['["service1", "recursive", [5]]']);
 		$this->assertCallFailed('Recursion is too deep', $out);
 	}
 
-	function testJsonTooDeepRecursionPTR(){
+	public function testJsonTooDeepRecursionPTR(){
 		list($out) = $this->titoCall(['j'=>1, 'b'=>'latin1', 'd'=>3, 'p'=>1, 't'=>1, 'r'=>1], ['["service1", "recursive", [5]]']);
 		$this->assertContains('Recursion is too deep', $out);
 	}
 
-	function testCleanParams(){
+	public function testCleanParams(){
 		$x = $this->createTestTito();
 		$argv = ['test.php', '-pt', '-se', '-d', '1', 'service1', 'reply', '1'];
 		$opt = ['p'=>1, 't'=>1, 's'=>1, 'e'=>1, 'd'=>'1'];
@@ -153,7 +153,7 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(['service1', 'reply', '1'], $params);
 	}
 
-	function testCleanWeirdParams(){
+	public function testCleanWeirdParams(){
 		$x = $this->createTestTito();
 		$argv = ['test.php', 'service1', '-pt', '-se', 'reply', '1'];
 		$opt = ['p'=>1, 't'=>1, 's'=>1, 'e'=>1];
@@ -161,17 +161,18 @@ class TitoTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(['service1', 'reply', '1'], $params);
 	}
 
-	function testEval(){
+	public function testEval(){
+		/** @noinspection SpellCheckingInspection */
 		list($out) = $this->titoCall(['x' => 'putenv("asd=zxc");'], ['service1', 'getEnv', 'asd']);
 		$this->assertEquals('[true,"zxc"]', trim($out));
 	}
 
-	function testErrorReporting(){
+	public function testErrorReporting(){
 		list($out) = $this->titoCall(['r'=>1], ['service1', 'reply']);
 		$this->assertCallFailed('Missing argument', $out);
 	}
 
-	function testFatalMethod(){
+	public function testFatalMethod(){
 		list($out) = $this->titoExternalCall(['e'=>1], ['service1', 'call_undefined']);
 		$this->assertCallFailed('Call to undefined method', $out);
 	}

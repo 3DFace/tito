@@ -5,35 +5,35 @@ namespace dface\tito;
 
 class MockService {
 
-	function reply($val){
+	public function reply($val){
 		return $val;
 	}
 
-	function length($val){
+	public function length($val){
 		return strlen($val);
 	}
 
-	function key_val($val){
+	public function key_val($val){
 		return [$val=>1];
 	}
 
-	function getEnv($name){
+	public function getEnv($name){
 		return getenv($name);
 	}
 
-	function getIni($name){
+	public function getIni($name){
 		return ini_get($name);
 	}
 
-	function recursive($deep){
+	public function recursive($deep){
 		if($deep<=0){
 			return $deep;
-		}else{
-			return [$this->recursive($deep - 1)];
 		}
+		return [$this->recursive($deep - 1)];
 	}
 
-	function call_undefined(){
+	public function call_undefined(){
+		/** @noinspection PhpUndefinedMethodInspection */
 		return $this->a();
 	}
 

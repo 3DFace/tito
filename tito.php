@@ -7,11 +7,11 @@ include_once 'vendor/autoload.php';
 // example service class
 class Test {
 
-	function process($val){
+	public function process($val){
 		return $val;
 	}
 
-	function info(){
+	public function info(){
 		return $_SERVER['argv'];
 	}
 
@@ -19,8 +19,8 @@ class Test {
 
 // kinda container
 $container = [
-	'service1' => new Test('service1'),
-	'service2' => new Test('service2'),
+	'service1' => new Test(),
+	'service2' => new Test(),
 ];
 
 // Initialize tito - pass in description and service-locator callback:

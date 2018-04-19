@@ -21,7 +21,7 @@ class Tito {
 	/** @var bool */
 	protected $fatal;
 
-	function __construct($system_info, $service_locator, $default_encoding = self::UTF8, $max_depth = 512){
+	public function __construct($system_info, $service_locator, $default_encoding = self::UTF8, $max_depth = 512){
 		$this->system_info = $system_info;
 		$this->service_locator = $service_locator;
 		$this->default_encoding = $default_encoding;
@@ -34,12 +34,12 @@ class Tito {
 			};
 		}else{
 			$this->encoding_converter = function (){
-				throw new TitoException("Encoding conversion unavailable. Please install mbstring extension.");
+				throw new TitoException('Encoding conversion unavailable. Please install mbstring extension.');
 			};
 		}
 	}
 
-	function help($script_name){
+	public function help($script_name){
 		$script = basename($script_name);
 		$n = PHP_EOL;
 		return
@@ -51,7 +51,7 @@ class Tito {
 			."${n}${n}or as JSON array, if -j specified:"
 			."${n}  '[\"<service>\", \"<method>\" [,<args array>]]'"
 			."${n}${n}A result is either:"
-			."${n}  [true, <returned value>] - for successful calls"
+			."${n}  [true, <returned value>] - for successful calls "
 			."${n}or"
 			."${n}  [false, <exception type>, <message>] - for failed ones."
 			."${n}${n}Results are displayed in JSON format unless -p|-y|-l specified."
@@ -74,9 +74,10 @@ class Tito {
 			."${n}${n}";
 	}
 
-	function call(){
+	public function call(){
 		if(PHP_SAPI === 'cli'){
 			$argv = $_SERVER['argv'];
+			/** @noinspection SpellCheckingInspection */
 			$opt = getopt('evtspyljqri:o:d:b:x:');
 			$params = $this->exclude_options_from_params($argv, $opt);
 			list($out, $exit) = $this->do_call($argv[0], $opt, $params);
@@ -85,9 +86,9 @@ class Tito {
 		}
 	}
 
-	function do_call($script_name, $opt, $params){
+	public function do_call($script_name, $opt, $params){
 		$exit_code = 0;
-		$out = "";
+		$out = '';
 		if(!empty($params)){
 			$service_encoding = isset($opt['b']) ? $opt['b'] : $this->default_encoding;
 			$input_encoding = isset($opt['i']) ? $opt['i'] : $this->default_encoding;
@@ -168,13 +169,14 @@ class Tito {
 		try{
 			if(isset($opt['p'])){
 				return print_r($this->convert($result_encoding, $output_encoding, $result), 1);
-			}elseif(isset($opt['y'])){
-				return $this->result_to_yaml($result, $result_encoding, $output_encoding);
-			}elseif(isset($opt['l'])){
-				return $this->result_to_lines($result, 0);
-			}else{
-				return $this->result_to_json($result, $result_encoding, $output_encoding).PHP_EOL;
 			}
+			if(isset($opt['y'])){
+				return $this->result_to_yaml($result, $result_encoding, $output_encoding);
+			}
+			if(isset($opt['l'])){
+				return $this->result_to_lines($result, 0);
+			}
+			return $this->result_to_json($result, $result_encoding, $output_encoding).PHP_EOL;
 		}catch(\Exception $e){
 			$result = [false, get_class($e), $e->getMessage()];
 			if(isset($opt['t'])){
@@ -187,15 +189,14 @@ class Tito {
 	protected function rescueFormatResult($result, $use_print_r){
 		if($use_print_r){
 			return print_r($result, 1);
-		}else{
-			$result = array_map(function($v){
-				return '"'.addslashes($v).'"';
-			}, array_slice($result, 1));
-			return '[false,'.implode(",", $result).']'.PHP_EOL;
 		}
+		$result = array_map(function($v){
+			return '"'.addslashes($v).'"';
+		}, array_slice($result, 1));
+		return '[false,'.implode(',', $result).']'.PHP_EOL;
 	}
 
-	function exclude_options_from_params($argv, $options){
+	public function exclude_options_from_params($argv, array $options){
 		$args = array_slice($argv, 1);
 		$params = [];
 		foreach($args as $i => $arg){
@@ -209,7 +210,7 @@ class Tito {
 					}else{
 						$is_opt_val = false;
 						foreach($options as $o => $val_arr){
-							if(!is_array($val_arr)){
+							if(!\is_array($val_arr)){
 								$val_arr = [$val_arr];
 							}
 							foreach($val_arr as $val){
@@ -229,6 +230,13 @@ class Tito {
 		return $params;
 	}
 
+	/**
+	 * @param $body
+	 * @param $input_encoding
+	 * @param $service_encoding
+	 * @return array
+	 * @throws TitoException
+	 */
 	protected function parseJsonCallDefinition($body, $input_encoding, $service_encoding){
 		$utf8_json = $this->convert($input_encoding, self::UTF8, $body);
 		$call = json_decode($utf8_json, true, $this->max_depth);
@@ -257,6 +265,13 @@ class Tito {
 		return [$service_name, $method_name, $call_args];
 	}
 
+	/**
+	 * @param $params
+	 * @param $input_encoding
+	 * @param $service_encoding
+	 * @return array
+	 * @throws TitoException
+	 */
 	protected function parsePlainCallDefinition($params, $input_encoding, $service_encoding){
 		$service_name = $params[0];
 		if(count($params) < 2){
@@ -268,11 +283,18 @@ class Tito {
 		return [$service_name, $method_name, $call_args];
 	}
 
+	/**
+	 * @param $result
+	 * @param $result_encoding
+	 * @param $output_encoding
+	 * @return array|mixed
+	 * @throws TitoException
+	 */
 	protected function result_to_json($result, $result_encoding, $output_encoding){
 		$result_utf8 = $this->convert($result_encoding, self::UTF8, $result);
 		$json_utf8 = json_encode($result_utf8, 0, $this->max_depth);
 		if($json_utf8 === false){
-			throw new TitoException("Cant format result as JSON: ".json_last_error_msg());
+			throw new TitoException('Cant format result as JSON: '.json_last_error_msg());
 		}
 		$json_utf8 = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', function ($match){
 			return $this->convert_encoding(pack('H*', $match[1]), self::UTF8, 'UCS-2BE');
@@ -280,57 +302,82 @@ class Tito {
 		return $this->convert(self::UTF8, $output_encoding, $json_utf8);
 	}
 
+	/**
+	 * @param $result
+	 * @param $result_encoding
+	 * @param $output_encoding
+	 * @return array|mixed
+	 * @throws TitoException
+	 */
 	protected function result_to_yaml($result, $result_encoding, $output_encoding){
 		$result_utf8 = $this->convert($result_encoding, self::UTF8, $result);
 		try{
 			$yaml_utf8 = Yaml::dump($result_utf8, 4, 4, true, true);
 		}catch(\Exception $e){
-			throw new TitoException("Cant format result as YAML: ".$e->getMessage());
+			throw new TitoException('Cant format result as YAML: '.$e->getMessage());
 		}
 		return $this->convert(self::UTF8, $output_encoding, $yaml_utf8);
 	}
 
+	/**
+	 * @param $value
+	 * @param $level
+	 * @return string
+	 * @throws TitoException
+	 */
 	protected function result_to_lines($value, $level){
 		if($level === $this->max_depth){
 			throw new TitoException("Recursion is too deep ($level)");
 		}
-		$result = "";
+		$result = '';
 		if(is_array($value)){
 			foreach($value as $v){
 				$result .= $this->result_to_lines($v, $level + 1);
 			}
 		}else{
-			$result .= strval($value).PHP_EOL;
+			$result .= (string)$value.PHP_EOL;
 		}
 		return $result;
 	}
 
+	/**
+	 * @param $in_encoding
+	 * @param $out_encoding
+	 * @param $value
+	 * @return array|mixed
+	 * @throws TitoException
+	 */
 	protected function convert($in_encoding, $out_encoding, $value){
 		if(strcasecmp($in_encoding, $out_encoding)){
 			if(is_array($value)){
 				return $this->convert_recursive($in_encoding, $out_encoding, $value, 0);
-			}else{
-				if(is_string($value)){
-					return $this->convert_encoding($value, $out_encoding, $in_encoding);
-				}else{
-					return $value;
-				}
 			}
-		}else{
+			if(is_string($value)){
+				return $this->convert_encoding($value, $out_encoding, $in_encoding);
+			}
 			return $value;
 		}
+		return $value;
 	}
 
+	/**
+	 * @param $in_encoding
+	 * @param $out_encoding
+	 * @param array $value
+	 * @param $level
+	 * @return array
+	 * @throws TitoException
+	 */
 	protected function convert_recursive($in_encoding, $out_encoding, $value, $level){
 		if($level === $this->max_depth){
 			throw new TitoException("Recursion is too deep ($level)");
 		}
 		$result = [];
 		foreach($value as $k => $v){
-			if(is_string($k)){
+			if(\is_string($k)){
 				$k = $this->convert_encoding($k, $out_encoding, $in_encoding);
 			}
-			if(is_array($v)){
+			if(\is_array($v)){
 				$v = $this->convert_recursive($in_encoding, $out_encoding, $v, $level + 1);
 			}elseif(is_string($v)){
 				$v = $this->convert_encoding($v, $out_encoding, $in_encoding);
@@ -340,11 +387,18 @@ class Tito {
 		return $result;
 	}
 
+	/**
+	 * @param $v
+	 * @param $out_encoding
+	 * @param $in_encoding
+	 * @return mixed
+	 * @throws TitoException
+	 */
 	protected function convert_encoding($v, $out_encoding, $in_encoding){
 		$result = call_user_func($this->encoding_converter, $v, $out_encoding, $in_encoding);
 		if($result === false){
 			$e = error_get_last();
-			throw new TitoException("Cant convert encoding: ".$e['message']);
+			throw new TitoException('Cant convert encoding: '.$e['message']);
 		}
 		return $result;
 	}
