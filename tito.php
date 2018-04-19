@@ -4,10 +4,39 @@
 // please modify this to conform with your class-loading strategy:
 include_once 'vendor/autoload.php';
 
+
+class Param implements JsonSerializable {
+
+	/** @var string */
+	private $val;
+
+	/**
+	 * @param string $val
+	 */
+	public function __construct($val)
+	{
+		$this->val = $val;
+	}
+
+	public static function deserialize($val){
+		return new static($val);
+	}
+
+	public function jsonSerialize()
+	{
+		return $this->val;
+	}
+
+}
+
 // example service class
 class Test {
 
 	public function process($val){
+		return $val;
+	}
+
+	public function processObj(Param $val){
 		return $val;
 	}
 

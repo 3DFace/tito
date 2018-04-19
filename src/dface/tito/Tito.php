@@ -139,11 +139,15 @@ class Tito {
 						echo $this->rescueFormatResult([false, 'FatalError', $msg], isset($opt['p'])).PHP_EOL;
 					}
 				});
+				$call_args = $this->deserializeParameters(\get_class($service), $method_name, $call_args);
 				$result = [true, call_user_func_array($callable, $call_args)];
 			}catch(\Exception $e){
 				$result = [false, get_class($e), $e->getMessage()];
 				if(isset($opt['t'])){
 					$result[] = $e->getTraceAsString();
+					while($e = $e->getPrevious()){
+						$result[] = $e->getTraceAsString();
+					}
 				}
 			}
 			$this->fatal = false;
@@ -282,6 +286,41 @@ class Tito {
 		$call_args = $this->convert($input_encoding, $service_encoding, $call_args);
 		return [$service_name, $method_name, $call_args];
 	}
+
+	/**
+	 * @param $className
+	 * @param $methodName
+	 * @param array $parameters
+	 * @return array
+	 * @throws TitoException
+	 */
+	private function deserializeParameters($className, $methodName, array $parameters){
+		try{
+			$method = new \ReflectionMethod($className, $methodName);
+		}catch (\ReflectionException $e){
+			throw new TitoException($e->getMessage(), 0, $e);
+		}
+		$method_parameters = $method->getParameters();
+		foreach($method_parameters as $i => $mp){
+			if(isset($parameters[$i])) {
+				$paramClass = $mp->getClass();
+				if ($paramClass !== null) {
+					$paramClassName = $paramClass->getName();
+					if (method_exists($paramClassName, 'deserialize')) {
+						$paramName = $mp->getName();
+						try{
+							/** @noinspection PhpUndefinedMethodInspection */
+							$parameters[$i] = $paramClassName::deserialize($parameters[$i]);
+						}catch (\Exception $e){
+							throw new TitoException("Can't deserialize '$paramName': ".$e->getMessage(), 2, $e);
+						}
+					}
+				}
+			}
+		}
+		return $parameters;
+	}
+
 
 	/**
 	 * @param $result
