@@ -29,6 +29,26 @@ class Param implements JsonSerializable {
 
 }
 
+class Param2 implements JsonSerializable {
+
+	/** @var string */
+	private $val;
+
+	/**
+	 * @param string $val
+	 */
+	public function __construct($val)
+	{
+		$this->val = $val;
+	}
+
+	public function jsonSerialize()
+	{
+		return $this->val;
+	}
+
+}
+
 // example service class
 class Test {
 
@@ -37,6 +57,10 @@ class Test {
 	}
 
 	public function processObj(Param $val){
+		return $val;
+	}
+
+	public function processObj2(Param2 $val){
 		return $val;
 	}
 

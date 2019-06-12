@@ -306,13 +306,19 @@ class Tito {
 				$paramClass = $mp->getClass();
 				if ($paramClass !== null) {
 					$paramClassName = $paramClass->getName();
+					$paramName = $mp->getName();
 					if (method_exists($paramClassName, 'deserialize')) {
-						$paramName = $mp->getName();
 						try{
 							/** @noinspection PhpUndefinedMethodInspection */
 							$parameters[$i] = $paramClassName::deserialize($parameters[$i]);
 						}catch (\Exception $e){
 							throw new TitoException("Can't deserialize '$paramName': ".$e->getMessage(), 2, $e);
+						}
+					}else{
+						try{
+							$parameters[$i] = new $paramClassName($parameters[$i]);
+						}catch (\Exception $e){
+							throw new TitoException("Can't construct '$paramName': ".$e->getMessage(), 2, $e);
 						}
 					}
 				}
