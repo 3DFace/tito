@@ -3,36 +3,44 @@
 
 namespace dface\tito;
 
-class MockService {
+class MockService
+{
 
-	public function reply($val){
+	public function reply($val)
+	{
 		return $val;
 	}
 
-	public function length($val){
+	public function length($val) : int
+	{
 		return strlen($val);
 	}
 
-	public function key_val($val){
-		return [$val=>1];
+	public function key_val($val) : array
+	{
+		return [$val => 1];
 	}
 
-	public function getEnv($name){
+	public function getEnv($name)
+	{
 		return getenv($name);
 	}
 
-	public function getIni($name){
+	public function getIni($name) : string
+	{
 		return ini_get($name);
 	}
 
-	public function recursive($deep){
-		if($deep<=0){
-			return $deep;
+	public function recursive($deep) : array
+	{
+		if ($deep <= 0) {
+			return [$deep];
 		}
 		return [$this->recursive($deep - 1)];
 	}
 
-	public function call_undefined(){
+	public function call_undefined()
+	{
 		/** @noinspection PhpUndefinedMethodInspection */
 		return $this->a();
 	}

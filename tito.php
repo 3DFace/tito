@@ -1,24 +1,23 @@
 <?php
 // Example tiny tool
 
-// please modify this to conform with your class-loading strategy:
+// modify this to conform with your class-loading strategy:
+use dface\tito\Tito;
+
 include_once 'vendor/autoload.php';
 
+class Param implements JsonSerializable
+{
 
-class Param implements JsonSerializable {
+	private string $val;
 
-	/** @var string */
-	private $val;
-
-	/**
-	 * @param string $val
-	 */
-	public function __construct($val)
+	public function __construct(string $val)
 	{
 		$this->val = $val;
 	}
 
-	public static function deserialize($val){
+	public static function deserialize($val) : self
+	{
 		return new static($val);
 	}
 
@@ -29,15 +28,12 @@ class Param implements JsonSerializable {
 
 }
 
-class Param2 implements JsonSerializable {
+class Param2 implements JsonSerializable
+{
 
-	/** @var string */
-	private $val;
+	private string $val;
 
-	/**
-	 * @param string $val
-	 */
-	public function __construct($val)
+	public function __construct(string $val)
 	{
 		$this->val = $val;
 	}
@@ -50,21 +46,26 @@ class Param2 implements JsonSerializable {
 }
 
 // example service class
-class Test {
+class Test
+{
 
-	public function process($val){
+	public function process($val)
+	{
 		return $val;
 	}
 
-	public function processObj(Param $val){
+	public function processObj(Param $val) : \Param
+	{
 		return $val;
 	}
 
-	public function processObj2(Param2 $val){
+	public function processObj2(Param2 $val) : \Param2
+	{
 		return $val;
 	}
 
-	public function info(){
+	public function info()
+	{
 		return $_SERVER['argv'];
 	}
 
@@ -77,9 +78,9 @@ $container = [
 ];
 
 // Initialize tito - pass in description and service-locator callback:
-$tito = new \dface\tito\Tito(
+$tito = new Tito(
 	'X-system command line tool.',
-	function ($service_name) use ($container){
+	static function ($service_name) use ($container) {
 		return $container[$service_name];
 	}
 );

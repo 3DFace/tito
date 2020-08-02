@@ -2,50 +2,22 @@
 
 ### Tiny Tool
 
-This is a small class that helps you to construct a lightweight command line tool for your application.
-
-You may find it interesting if you utilize any kind of IoC-container in your apps.
-
-Using that tool you can call your services from a command line.
-
-Something like:
+Helper class to make a CLI tool to call app services.
 
 `php tito.php <service_name> <method_name> <param1> <param2> ...`
 
-There is nothing special.
-It just takes a `<service>` from your container, calls its method and outputs a result in JSON format.
-You don't have to implement any kind of interfaces or adapters to make it work.
-Just provide a service-locator callback.
-
-It is doubtful that the instrument is suitable for end user. Rather, it is a developer's assistant tool.
-Cause you have to know which services are available and what they actually do.
-
-In our project we use it to attach some jobs to cron.
-And also for primitive rpc-integration - beside application makes cli-requests to our services.
+It takes a `<service>` from a container, calls a method and outputs a result.
+To locate a service it needs a service-locator callback.
 
 ## Setup
 
-Add to your composer.json file:
-
-``` json
-{
-    "require": {
-		"dface/tito": "dev-master"
-	}
-}
 ```
-
-Library organized according to PSR-0.
-
-So you can use composer autoloader:
-``` php
-require 'vendor/autoload.php';
+composer require dface/tito
 ```
-or use custom PSR-0 loader.
 
 ## Usage
 
-Lets create example tiny tool to demonstrate the concept.
+Let's create example tiny tool to demonstrate the concept.
 
 Create file named `tito.php` with following content. (You can choose any other name)
 
@@ -85,9 +57,6 @@ $tito = new \dface\tito\Tito(
 $tito->call();
 ```
 
-Of course, in a real application, your classes and a container should be defined somewhere else.
-Most likely, you will inject your container configuration with `include`.
-
 Execute the script from command line. Don't pass any params for now.
 
 `php tito.php`
@@ -122,7 +91,6 @@ Options:
   -q   quite mode - skip result status 'true' for successful call
   -s   silent mode - no output for successful calls
   -v   verbose mode - don't suppress service stdout, don't suppress error_reporting
-  -r   report errors - throw ErrorException on E_ALL
   -t   add a stacktrace to failed results
   -i   input encoding (utf-8 assumed by default)
   -b   service internal encoding (utf-8 assumed by default)
@@ -151,12 +119,3 @@ Status `false` indicates that a call was failed for some reasons. With `false` y
 php tito.php asd process hi
 [false,"dface\\tito\\TitoException","No such service 'asd'"]
 ```
-
-## Security
-
-`Tito` relies on `PHP_SAPI` constant to prevent execution from non-cli environment. There are no other restrictions.
-If you need more advanced policy, please implement it by yourself in your script.
-
-## Tests
-
-`phpunit`
