@@ -141,7 +141,7 @@ class TitoTest extends TestCase
 	public function testJsonBadInputEncoding() : void
 	{
 		[$out] = $this->titoCall(['j' => 1, 'i' => 'xxx'], ['["service1", "reply", ["'.\chr(244).'"]]']);
-		self::assertCallFailed('Unknown encoding', $out);
+		self::assertCallFailed('encoding', $out);
 	}
 
 	public function testJsonBadValueEncoding() : void

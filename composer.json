@@ -16,12 +16,17 @@
 		"ext-mbstring": "*"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^8.4"
+		"phpunit/phpunit": "^10.3.5"
 	},
 	"suggest": {
 		"ext-mbstring": "MBstring or iconv required to work with non-utf encodings"
 	},
 	"autoload": {
 		"psr-0": {"dface\\tito\\": "src/"}
+	},
+	"config": {
+		"platform": {
+			"php": "8.2.5"
+		}
 	}
 }
