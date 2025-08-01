@@ -353,7 +353,7 @@ class Tito
 	{
 		$result_utf8 = $this->convert_encoding($result, self::UTF8, $result_encoding);
 		try{
-			$yaml_utf8 = Yaml::dump($result_utf8, 4, 4);
+			$yaml_utf8 = Yaml::dump($result_utf8, 4);
 		}catch (\Throwable $e){
 			throw new TitoException('Cant format result as YAML: '.$e->getMessage());
 		}
