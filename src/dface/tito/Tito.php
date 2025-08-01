@@ -9,7 +9,7 @@ use Symfony\Component\Yaml\Yaml;
 class Tito
 {
 
-	private const UTF8 = 'utf-8';
+	private const string UTF8 = 'utf-8';
 
 	/** @var callable */
 	private $service_locator;
@@ -33,36 +33,38 @@ class Tito
 	public function help($script_name) : string
 	{
 		$script = \basename($script_name);
-		$n = PHP_EOL;
+		$n1 = PHP_EOL;
+		$n2 = $n1.$n1;
+		/** @noinspection GrazieInspection */
 		return
 			$this->system_info
-			."{$n}{$n}Makes a service method call and outputs a result."
-			."{$n}{$n}Usage: php $script [options] <call>"
-			."{$n}{$n}A <call> can be in the default form:"
-			."{$n}  <service> <method> [<arg1> <arg2> ...]"
-			."{$n}{$n}or as JSON array, if -j specified:"
-			."{$n}  '[\"<service>\", \"<method>\" [,<args array>]]'"
-			."{$n}{$n}A result is either:"
-			."{$n}  [true, <returned value>] - for successful calls "
-			."{$n}or"
-			."{$n}  [false, <exception type>, <message>] - for failed ones."
-			."{$n}{$n}Results are displayed in JSON format unless -p|-y|-l specified."
-			."{$n}{$n}Options:"
-			."{$n}  -j   <call> passed in JSON format"
-			."{$n}  -p   output a result with print_r instead of JSON"
-			."{$n}  -y   output a result as YAML instead of JSON"
-			."{$n}  -l   output a result as list of lines (values only)"
-			."{$n}  -q   quite mode - skip result status 'true' for successful calls"
-			."{$n}  -s   silent mode - no output for successful calls"
-			."{$n}  -v   verbose mode - don't suppress service stdout, don't suppress error_reporting"
-			."{$n}  -t   add a stacktrace to failed results"
-			."{$n}  -i   input encoding ($this->default_encoding assumed by default)"
-			."{$n}  -b   service internal encoding ($this->default_encoding assumed by default)"
-			."{$n}  -o   output encoding (input encoding assumed by default)"
-			."{$n}  -d   max recursion depth for encoding conversion (default $this->max_depth)"
-			."{$n}  -x   eval specified code before making service call"
-			."{$n}  -e   set exit code to '1' for failed calls"
-			."{$n}{$n}";
+			.$n2."Makes a service method call and outputs a result."
+			.$n2."Usage: php $script [options] <call>"
+			.$n2."A <call> can be in the default form:"
+			.$n1."  <service> <method> [<arg1> <arg2> ...]"
+			.$n2."or as JSON array, if -j specified:"
+			.$n1."  '[\"<service>\", \"<method>\" [,<args array>]]'"
+			.$n2."A result is either:"
+			.$n1."  [true, <returned value>] - for successful calls "
+			.$n1."or"
+			.$n1."  [false, <exception type>, <message>] - for failed ones."
+			.$n2."Results are displayed in JSON format unless -p|-y|-l specified."
+			.$n2."Options:"
+			.$n1."  -j   <call> passed in JSON format"
+			.$n1."  -p   output a result with print_r instead of JSON"
+			.$n1."  -y   output a result as YAML instead of JSON (requires symfony/yaml)"
+			.$n1."  -l   output a result as list of lines (values only)"
+			.$n1."  -q   quite mode - skip result status 'true' for successful calls"
+			.$n1."  -s   silent mode - no output for successful calls"
+			.$n1."  -v   verbose mode - don't suppress service stdout, don't suppress error_reporting"
+			.$n1."  -t   add a stacktrace to failed results"
+			.$n1."  -i   input encoding ($this->default_encoding assumed by default)"
+			.$n1."  -b   service internal encoding ($this->default_encoding assumed by default)"
+			.$n1."  -o   output encoding (input encoding assumed by default)"
+			.$n1."  -d   max recursion depth for encoding conversion (default $this->max_depth)"
+			.$n1."  -x   eval specified code before making service call"
+			.$n1."  -e   set exit code to '1' for failed calls"
+			.$n2;
 	}
 
 	public function call() : void
@@ -185,7 +187,7 @@ class Tito
 		}
 	}
 
-	private function rescueFormatResult($result, $use_print_r)
+	private function rescueFormatResult($result, $use_print_r) : string
 	{
 		if ($use_print_r) {
 			return \print_r($result, 1);
@@ -301,8 +303,7 @@ class Tito
 		$method_parameters = $method->getParameters();
 		foreach ($method_parameters as $i => $mp) {
 			if (isset($parameters[$i])) {
-				$paramClass = $mp->getClass();
-				if ($paramClass !== null) {
+				if (($paramClass = $mp->getType()) && !$paramClass->isBuiltin()) {
 					$paramClassName = $paramClass->getName();
 					$paramName = $mp->getName();
 					if (\method_exists($paramClassName, 'deserialize')) {
