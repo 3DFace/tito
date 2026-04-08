@@ -21,7 +21,7 @@ class Param implements JsonSerializable
 		return new static($val);
 	}
 
-	public function jsonSerialize()
+	public function jsonSerialize() : string
 	{
 		return $this->val;
 	}
@@ -38,7 +38,7 @@ class Param2 implements JsonSerializable
 		$this->val = $val;
 	}
 
-	public function jsonSerialize()
+	public function jsonSerialize() : string
 	{
 		return $this->val;
 	}
@@ -85,5 +85,5 @@ $tito = new Tito(
 	}
 );
 
-// ask tito to make the rest
+// ask Tito to make the rest
 $tito->call();
